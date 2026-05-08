@@ -19,8 +19,9 @@ function KanbanBoard() {
       }
       const data: Item[] = await response.json();
       setItems(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(errorMessage);
     } finally {
       setLoading(false);
       toast("The items have been loaded successfully");
@@ -28,7 +29,10 @@ function KanbanBoard() {
   };
 
   useEffect(() => {
-    fetchItems();
+    const loadItems = async () => {
+      await fetchItems();
+    };
+    loadItems();
   }, []);
 
   if (loading) {
@@ -123,9 +127,10 @@ function KanbanBoard() {
       toast.success(`Item ${itemId} moved to ${newState}`);
       fetchItems(); // Reload items to ensure consistency
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error updating item state:', error);
-      toast.error(`Failed to move item ${itemId}: ${error.message}`);
+      toast.error(`Failed to move item ${itemId}: ${errorMessage}`);
       // Revert state on error
       setItems(items.map(item =>
         item.id === parseInt(itemId, 10) ? { ...item, state: originalState } : item
